@@ -11,8 +11,8 @@ from starkware.cairo.common.uint256 import (
     uint256_le,
     uint256_check,
 )
-from contracts.introspection.IERC165 import IERC165
-from contracts.interfaces.IERC1155_Receiver import IERC1155_Receiver
+from src.introspection.IERC165 import IERC165
+from src.interfaces.IERC1155_Receiver import IERC1155_Receiver
 
 const IERC1155_interface_id = 0xd9b67a26;
 const IERC1155_MetadataURI_interface_id = 0x0e89341c;

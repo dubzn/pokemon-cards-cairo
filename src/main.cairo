@@ -3,40 +3,16 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
-from contracts.ownable import Ownable
-from contracts.library import (
-    ERC1155_initializer,
-    ERC1155_supportsInterface,
-    ERC1155_uri,
-    ERC1155_balanceOf,
-    ERC1155_balanceOfBatch,
-    ERC1155_isApprovedForAll,
-    ERC1155_setApprovalForAll,
-    ERC1155_safeTransferFrom,
-    ERC1155_safeBatchTransferFrom,
-    ERC1155_mint,
-    ERC1155_mint_batch,
-    ERC1155_burn,
-    ERC1155_burn_batch,
-    owner_or_approved,
-)
-
-//
-// Constructor
-//
+from src.contracts.ownable import Ownable
+from src.contracts.library import ERC1155_initializer, ERC1155_supportsInterface, ERC1155_uri, ERC1155_balanceOf, ERC1155_balanceOfBatch, ERC1155_isApprovedForAll, ERC1155_setApprovalForAll, ERC1155_safeTransferFrom, ERC1155_safeBatchTransferFrom, ERC1155_mint, ERC1155_mint_batch, ERC1155_burn, ERC1155_burn_batch, owner_or_approved
 
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    uri: felt, owner: felt
-) {
-    ERC1155_initializer(uri);
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
+    ERC1155_initializer('https://dweb.link/ipfs/');
     Ownable.initializer(owner);
     return ();
 }
 
-//
-// Getters
-//
 
 @view
 func supportsInterface(interfaceId: felt) -> (is_supported: felt) {
