@@ -136,28 +136,15 @@
             {
                 "name": "owner",
                 "type": "felt"
+            },
+            {
+                "name": "url",
+                "type": "felt"
             }
         ],
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
-    },
-    {
-        "inputs": [
-            {
-                "name": "interfaceId",
-                "type": "felt"
-            }
-        ],
-        "name": "supportsInterface",
-        "outputs": [
-            {
-                "name": "is_supported",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
     },
     {
         "inputs": [],
@@ -226,93 +213,19 @@
         "type": "function"
     },
     {
-        "inputs": [
+        "inputs": [],
+        "name": "block_and_time",
+        "outputs": [
             {
-                "name": "account",
+                "name": "time",
                 "type": "felt"
             },
             {
-                "name": "operator",
-                "type": "felt"
-            }
-        ],
-        "name": "isApprovedForAll",
-        "outputs": [
-            {
-                "name": "is_approved",
+                "name": "block",
                 "type": "felt"
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "operator",
-                "type": "felt"
-            },
-            {
-                "name": "approved",
-                "type": "felt"
-            }
-        ],
-        "name": "setApprovalForAll",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "_from",
-                "type": "felt"
-            },
-            {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "id",
-                "type": "Uint256"
-            },
-            {
-                "name": "amount",
-                "type": "Uint256"
-            }
-        ],
-        "name": "safeTransferFrom",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "_from",
-                "type": "felt"
-            },
-            {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "ids_len",
-                "type": "felt"
-            },
-            {
-                "name": "ids",
-                "type": "Uint256*"
-            },
-            {
-                "name": "amounts_len",
-                "type": "felt"
-            },
-            {
-                "name": "amounts",
-                "type": "Uint256*"
-            }
-        ],
-        "name": "safeBatchTransferFrom",
-        "outputs": [],
         "type": "function"
     },
     {
@@ -364,26 +277,7 @@
     {
         "inputs": [
             {
-                "name": "_from",
-                "type": "felt"
-            },
-            {
-                "name": "id",
-                "type": "Uint256"
-            },
-            {
-                "name": "amount",
-                "type": "Uint256"
-            }
-        ],
-        "name": "burn",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "_from",
+                "name": "to",
                 "type": "felt"
             },
             {
@@ -403,7 +297,7 @@
                 "type": "Uint256*"
             }
         ],
-        "name": "burnBatch",
+        "name": "mintCardsBatch",
         "outputs": [],
         "type": "function"
     }
