@@ -6,7 +6,7 @@ from starkware.cairo.common.hash import hash2
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp, get_caller_address
 
-
+from src.utils.converter import felt_to_uint
 from src.utils.time_converter import epoch_to_date
 from src.utils.random_generator import generate_blister_pack
 from src.contracts.ownable import Ownable
@@ -46,7 +46,7 @@ func balanceOfBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 }
 
 @external
-func mintCardsBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (pack_len: felt, pack: Uint256*) {
+func mintCardsBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     let (current_epoch) = get_block_timestamp();
     let (current_block) = get_block_number();
@@ -67,8 +67,8 @@ func mintCardsBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let (pack_len, pack) = generate_blister_pack(current_epoch + current_block, MIN_VALUE_CARD_ID, MAX_VALUE_CARD_ID);
     let array_amounts_filled_one = fill_array_with(pack_len, 1);
 
-    // ERC1155_mint_batch(caller_adress, pack_len, pack, amounts_len, amounts);
-    return (pack_len, pack);
+    ERC1155_mint_batch(caller_adress, pack_len, pack, pack_len, array_amounts_filled_one);
+    return ();
 }
 
 // @view
@@ -144,15 +144,16 @@ func mintBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 // }
 
 // AUX
-func fill_array_with{range_check_ptr}(len: felt, value_to_fill: felt) -> felt* {
-    let array: felt* = alloc();
+func fill_array_with{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(len: felt, value_to_fill: felt) -> Uint256* {
+    let array: Uint256* = alloc();
     return _fill_array_with(len, value_to_fill, array, 0);
 }
 
-func _fill_array_with{range_check_ptr}(len: felt, value_to_fill: felt, array: felt*, i: felt) -> felt* {
+func _fill_array_with{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(len: felt, value_to_fill: felt, array: Uint256*, i: felt) -> Uint256* {
     if (len == i) {
         return array;
     }
-    assert array[i] = value_to_fill;
+    let converted_value = felt_to_uint(value_to_fill);
+    assert array[i] = converted_value;
     return _fill_array_with(len, value_to_fill, array, i + 1);
 }

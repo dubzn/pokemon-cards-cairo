@@ -215,16 +215,7 @@
     {
         "inputs": [],
         "name": "mintCardsBatch",
-        "outputs": [
-            {
-                "name": "pack_len",
-                "type": "felt"
-            },
-            {
-                "name": "pack",
-                "type": "Uint256*"
-            }
-        ],
+        "outputs": [],
         "type": "function"
     },
     {
