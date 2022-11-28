@@ -214,18 +214,17 @@
     },
     {
         "inputs": [],
-        "name": "block_and_time",
+        "name": "mintCardsBatch",
         "outputs": [
             {
-                "name": "time",
+                "name": "pack_len",
                 "type": "felt"
             },
             {
-                "name": "block",
-                "type": "felt"
+                "name": "pack",
+                "type": "Uint256*"
             }
         ],
-        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -271,33 +270,6 @@
             }
         ],
         "name": "mintBatch",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "ids_len",
-                "type": "felt"
-            },
-            {
-                "name": "ids",
-                "type": "Uint256*"
-            },
-            {
-                "name": "amounts_len",
-                "type": "felt"
-            },
-            {
-                "name": "amounts",
-                "type": "Uint256*"
-            }
-        ],
-        "name": "mintCardsBatch",
         "outputs": [],
         "type": "function"
     }
