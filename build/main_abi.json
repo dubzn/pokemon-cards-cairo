@@ -148,6 +148,18 @@
     },
     {
         "inputs": [],
+        "name": "user_claim_pack",
+        "outputs": [
+            {
+                "name": "claimed",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "uri",
         "outputs": [
             {

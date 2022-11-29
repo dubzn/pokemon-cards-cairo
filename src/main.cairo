@@ -27,6 +27,21 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }
 
 @view
+func user_claim_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (claimed: felt) {
+    let (current_epoch) = get_block_timestamp();
+
+    let (year, month, day) = epoch_to_date(current_epoch);
+    let year_aux = year * 10000;
+    let month_aux = month * 100;
+    let date = year_aux + month_aux + day;
+
+    let (claim_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, date);
+    let (claimed_pack_today) = claimed_pack.read(claim_hash);
+
+    return (claimed=claimed_pack_today);
+}
+
+@view
 func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (uri: felt) {
     return ERC1155_uri();
 }
@@ -64,10 +79,11 @@ func mintCardsBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
         assert claimed_pack_today = 0;
     }
 
-    let (pack_len, pack) = generate_blister_pack(current_epoch + current_block, MIN_VALUE_CARD_ID, MAX_VALUE_CARD_ID);
+    let (pack_len, pack, claimed_cards) = generate_blister_pack(current_epoch + current_block, MIN_VALUE_CARD_ID, MAX_VALUE_CARD_ID);
     let array_amounts_filled_one = fill_array_with(pack_len, 1);
 
     ERC1155_mint_batch(caller_adress, pack_len, pack, pack_len, array_amounts_filled_one);
+    claimed_pack.write(claim_hash, claimed_cards);
     return ();
 }
 
