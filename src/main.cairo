@@ -61,7 +61,7 @@ func balanceOfBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 }
 
 @external
-func mintCardsBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func mintDailyCards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     let (current_epoch) = get_block_timestamp();
     let (current_block) = get_block_number();
