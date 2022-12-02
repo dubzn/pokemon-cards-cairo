@@ -136,10 +136,6 @@
             {
                 "name": "owner",
                 "type": "felt"
-            },
-            {
-                "name": "url",
-                "type": "felt"
             }
         ],
         "name": "constructor",
@@ -153,7 +149,24 @@
                 "type": "felt"
             }
         ],
-        "name": "user_claim_pack",
+        "name": "get_user_daily_trade",
+        "outputs": [
+            {
+                "name": "daily_trade",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "user_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_user_claimed_pack",
         "outputs": [
             {
                 "name": "claimed",
@@ -231,7 +244,22 @@
     },
     {
         "inputs": [],
-        "name": "mintDailyCards",
+        "name": "mint_daily_cards",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "id",
+                "type": "Uint256"
+            }
+        ],
+        "name": "send_card_to",
         "outputs": [],
         "type": "function"
     },

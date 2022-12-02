@@ -3,14 +3,16 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash import hash2
+from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp, get_caller_address
+
 
 from src.utils.converter import felt_to_uint
 from src.utils.time_converter import epoch_to_date
 from src.utils.random_generator import generate_blister_pack
 from src.contracts.ownable import Ownable
-from src.contracts.library import ERC1155_initializer, ERC1155_supportsInterface, ERC1155_uri, ERC1155_balanceOf, ERC1155_balanceOfBatch, ERC1155_isApprovedForAll, ERC1155_setApprovalForAll, ERC1155_safeTransferFrom, ERC1155_safeBatchTransferFrom, ERC1155_mint, ERC1155_mint_batch, ERC1155_burn, ERC1155_burn_batch, owner_or_approved
+from src.contracts.library import ERC1155_initializer, ERC1155_uri, ERC1155_balanceOf, ERC1155_balanceOfBatch, ERC1155_safeTransferFrom, ERC1155_mint, ERC1155_mint_batch
 
 const MIN_VALUE_CARD_ID = 1;
 const MAX_VALUE_CARD_ID = 69;
@@ -19,15 +21,23 @@ const MAX_VALUE_CARD_ID = 69;
 func claimed_pack(hash_value: felt) -> (claimed: felt) {
 }
 
+@storage_var
+func daily_trade(hash_value: felt) -> (claimed: felt) {
+}
+
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt, url: felt) {
-    ERC1155_initializer(url);
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
+    ERC1155_initializer(152661009894058335206669104024417562691910569980719); // https://ipfs.io/ipfs/
     Ownable.initializer(owner);
     return ();
 }
 
+// its represented with a positional felt
+// If it returns 10 it is because you have sent a card to another address, 
+// if it returns 1 it is because you have received a card from another person. 
+// If it is 11, then both conditions are met.
 @view
-func user_claim_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (claimed: felt) {
+func get_user_daily_trade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (daily_trade: felt) {
     let (current_epoch) = get_block_timestamp();
 
     let (year, month, day) = epoch_to_date(current_epoch);
@@ -35,8 +45,23 @@ func user_claim_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     let month_aux = month * 100;
     let date = year_aux + month_aux + day;
 
-    let (claim_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, date);
-    let (claimed_pack_today) = claimed_pack.read(claim_hash);
+    let (user_plus_day_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, date);
+    let (trade_value) = daily_trade.read(user_plus_day_hash);
+
+    return (daily_trade=trade_value);
+}
+
+@view
+func get_user_claimed_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (claimed: felt) {
+    let (current_epoch) = get_block_timestamp();
+
+    let (year, month, day) = epoch_to_date(current_epoch);
+    let year_aux = year * 10000;
+    let month_aux = month * 100;
+    let date = year_aux + month_aux + day;
+
+    let (user_plus_day_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, date);
+    let (claimed_pack_today) = claimed_pack.read(user_plus_day_hash);
 
     return (claimed=claimed_pack_today);
 }
@@ -61,7 +86,7 @@ func balanceOfBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 }
 
 @external
-func mintDailyCards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func mint_daily_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     let (current_epoch) = get_block_timestamp();
     let (current_block) = get_block_number();
@@ -87,40 +112,46 @@ func mintDailyCards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     return ();
 }
 
-// @view
-// func isApprovedForAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     account: felt, operator: felt
-// ) -> (is_approved: felt) {
-//     return ERC1155_isApprovedForAll(account, operator);
-// }
 
-//
-// Externals
-//
+@external
+func send_card_to{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    to: felt, id: Uint256
+) {
+    alloc_locals;
+    let (current_epoch) = get_block_timestamp();
+    let (caller_adress) = get_caller_address();
 
-// @external
-// func setApprovalForAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     operator: felt, approved: felt
-// ) {
-//     ERC1155_setApprovalForAll(operator, approved);
-//     return ();
-// }
+    let (year, month, day) = epoch_to_date(current_epoch);
+    let year_aux = year * 10000;
+    let month_aux = month * 100;
+    let date = year_aux + month_aux + day;
 
-// @external
-// func safeTransferFrom{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     _from: felt, to: felt, id: Uint256, amount: Uint256
-// ) {
-//     ERC1155_safeTransferFrom(_from, to, id, amount);
-//     return ();
-// }
+    // Validate that the person sending the letter has not used their daily delivery.
+    let (caller_hash) = hash2{hash_ptr=pedersen_ptr}(caller_adress, date);
+    let (caller_trade_status) = daily_trade.read(caller_hash);
+    let (caller_send_card_flag, caller_receiver_card_flag) = unsigned_div_rem(caller_trade_status, 10);
 
-// @external
-// func safeBatchTransferFrom{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     _from: felt, to: felt, ids_len: felt, ids: Uint256*, amounts_len: felt, amounts: Uint256*
-// ) {
-//     ERC1155_safeBatchTransferFrom(_from, to, ids_len, ids, amounts_len, amounts);
-//     return ();
-// }
+    with_attr error_message("The person trying to send has already sent a card today!") {
+        assert caller_send_card_flag = 0;
+    }
+
+    // Validate that the person receiving the letter has not used their daily receipt.
+    let (receiver_hash) = hash2{hash_ptr=pedersen_ptr}(to, date);
+    let (receiver_trade_status) = daily_trade.read(receiver_hash);
+    let (receiver_send_card_flag, receiver_receive_card_flag) = unsigned_div_rem(receiver_trade_status, 10);
+
+    with_attr error_message("The person who is going to receive it has already received a card today!") {
+        assert receiver_receive_card_flag = 0;
+    }
+
+    let amount = felt_to_uint(1);
+    ERC1155_safeTransferFrom(caller_adress, to, id, amount);
+
+    // write sender and receiver variables
+    daily_trade.write(caller_hash, 10 + caller_receiver_card_flag);
+    daily_trade.write(receiver_hash, receiver_send_card_flag + 1);
+    return ();
+}
 
 @external
 func mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -139,25 +170,6 @@ func mintBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ERC1155_mint_batch(to, ids_len, ids, amounts_len, amounts);
     return ();
 }
-
-
-// @external
-// func burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     _from: felt, id: Uint256, amount: Uint256
-// ) {
-//     owner_or_approved(owner=_from);
-//     ERC1155_burn(_from, id, amount);
-//     return ();
-// }
-
-// @external
-// func burnBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     _from: felt, ids_len: felt, ids: Uint256*, amounts_len: felt, amounts: Uint256*
-// ) {
-//     owner_or_approved(owner=_from);
-//     ERC1155_burn_batch(_from, ids_len, ids, amounts_len, amounts);
-//     return ();
-// }
 
 // AUX
 func fill_array_with{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(len: felt, value_to_fill: felt) -> Uint256* {
