@@ -148,8 +148,8 @@ func send_card_to{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     ERC1155_safeTransferFrom(caller_adress, to, id, amount);
 
     // write sender and receiver variables
-    daily_trade.write(caller_hash, 10 + caller_receiver_card_flag);
-    daily_trade.write(receiver_hash, receiver_send_card_flag + 1);
+    daily_trade.write(caller_hash, caller_receiver_card_flag + 10);
+    daily_trade.write(receiver_hash, (receiver_send_card_flag * 10) + 1);
     return ();
 }
 
