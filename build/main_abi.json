@@ -19,21 +19,6 @@
     {
         "data": [
             {
-                "name": "previousOwner",
-                "type": "felt"
-            },
-            {
-                "name": "newOwner",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "OwnershipTransferred",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
                 "name": "operator",
                 "type": "felt"
             },
@@ -115,12 +100,8 @@
     {
         "data": [
             {
-                "name": "value_len",
-                "type": "felt"
-            },
-            {
                 "name": "value",
-                "type": "felt*"
+                "type": "felt"
             },
             {
                 "name": "id",
@@ -132,7 +113,26 @@
         "type": "event"
     },
     {
+        "data": [
+            {
+                "name": "previousOwner",
+                "type": "felt"
+            },
+            {
+                "name": "newOwner",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "OwnershipTransferred",
+        "type": "event"
+    },
+    {
         "inputs": [
+            {
+                "name": "uri",
+                "type": "felt"
+            },
             {
                 "name": "owner",
                 "type": "felt"
@@ -177,7 +177,12 @@
         "type": "function"
     },
     {
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "id",
+                "type": "Uint256"
+            }
+        ],
         "name": "uri",
         "outputs": [
             {
@@ -243,6 +248,17 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "name": "uri",
+                "type": "felt"
+            }
+        ],
+        "name": "setURI",
+        "outputs": [],
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "mint_daily_cards",
         "outputs": [],
@@ -276,6 +292,14 @@
             {
                 "name": "amount",
                 "type": "Uint256"
+            },
+            {
+                "name": "data_len",
+                "type": "felt"
+            },
+            {
+                "name": "data",
+                "type": "felt*"
             }
         ],
         "name": "mint",
@@ -303,6 +327,14 @@
             {
                 "name": "amounts",
                 "type": "Uint256*"
+            },
+            {
+                "name": "data_len",
+                "type": "felt"
+            },
+            {
+                "name": "data",
+                "type": "felt*"
             }
         ],
         "name": "mintBatch",

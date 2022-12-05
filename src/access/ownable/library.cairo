@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// OpenZeppelin Contracts for Cairo v0.5.1 (access/ownable/library.cairo)
+
 %lang starknet
 
 from starkware.starknet.common.syscalls import get_caller_address
@@ -22,7 +25,7 @@ func Ownable_owner() -> (owner: felt) {
 
 namespace Ownable {
     //
-    // Constructor
+    // Initializer
     //
 
     func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
@@ -31,12 +34,15 @@ namespace Ownable {
     }
 
     //
-    // Protector (Modifier)
+    // Guards
     //
 
     func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
         let (owner) = Ownable.owner();
         let (caller) = get_caller_address();
+        with_attr error_message("Ownable: caller is the zero address") {
+            assert_not_zero(caller);
+        }
         with_attr error_message("Ownable: caller is not the owner") {
             assert owner = caller;
         }
@@ -48,8 +54,7 @@ namespace Ownable {
     //
 
     func owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
-        let (owner) = Ownable_owner.read();
-        return (owner=owner);
+        return Ownable_owner.read();
     }
 
     func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
