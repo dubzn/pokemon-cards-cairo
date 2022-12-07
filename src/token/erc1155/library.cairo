@@ -48,10 +48,6 @@ func TransferBatch(
 func ApprovalForAll(account: felt, operator: felt, approved: felt) {
 }
 
-@event
-func URI(value: felt, id: Uint256) {
-}
-
 //
 // Storage
 //
@@ -64,17 +60,24 @@ func ERC1155_balances(id: Uint256, account: felt) -> (balance: Uint256) {
 func ERC1155_operator_approvals(account: felt, operator: felt) -> (approved: felt) {
 }
 
+
 @storage_var
-func ERC1155_uri() -> (uri: felt) {
-}   
+func ERC1155_name() -> (name: felt) {
+}
+
+@storage_var
+func ERC1155_symbol() -> (symbol: felt) {
+}
+
 
 namespace ERC1155 {
     //
     // Initializer
     //
 
-    func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(uri: felt) {
-        _set_uri(uri);
+    func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(name: felt, symbol: felt) {
+        ERC1155_name.write(name);
+        ERC1155_symbol.write(symbol);
         ERC165.register_interface(IERC1155_ID);
         ERC165.register_interface(IERC1155_METADATA_ID);
         return ();
@@ -102,11 +105,16 @@ namespace ERC1155 {
     // Getters
     //
 
-    func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(id: Uint256) -> (
-        uri: felt
+    func name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (name: felt) {
+        let (name) = ERC1155_name.read();
+        return (name,);
+    }
+
+    func symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        symbol: felt
     ) {
-        let (uri) = ERC1155_uri.read();
-        return (uri,);
+        let (symbol) = ERC1155_symbol.read();
+        return (symbol,);
     }
 
     func balance_of{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -401,11 +409,6 @@ namespace ERC1155 {
         return ();
     }
 
-    func _set_uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(uri: felt) {
-        ERC1155_uri.write(uri);
-        // should it emit or follow solidity's inability?
-        return ();
-    }
 }
 
 //
@@ -432,10 +435,10 @@ func _do_safe_transfer_acceptance_check{
     }
 
     // Alternatively confirm account
-    let (is_account) = IERC165.supportsInterface(to, IACCOUNT_ID);
-    with_attr error_message("ERC1155: transfer to non-ERC1155Receiver implementer") {
-        assert is_account = TRUE;
-    }
+    // let (is_account) = IERC165.supportsInterface(to, IACCOUNT_ID);
+    // with_attr error_message("ERC1155: transfer to non-ERC1155Receiver implementer") {
+    //     assert is_account = TRUE;
+    // }
     return ();
 }
 
@@ -474,10 +477,10 @@ func _do_safe_batch_transfer_acceptance_check{
     }
 
     // Alternatively confirm account
-    let (is_account) = IERC165.supportsInterface(to, IACCOUNT_ID);
-    with_attr error_message("ERC1155: transfer to non-ERC1155Receiver implementer") {
-        assert is_account = TRUE;
-    }
+    // let (is_account) = IERC165.supportsInterface(to, IACCOUNT_ID);
+    // with_attr error_message("ERC1155: transfer to non-ERC1155Receiver implementer") {
+    //     assert is_account = TRUE;
+    // }
     return ();
 }
 

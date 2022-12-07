@@ -19,21 +19,6 @@
     {
         "data": [
             {
-                "name": "previousOwner",
-                "type": "felt"
-            },
-            {
-                "name": "newOwner",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "OwnershipTransferred",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
                 "name": "operator",
                 "type": "felt"
             },
@@ -115,12 +100,8 @@
     {
         "data": [
             {
-                "name": "value_len",
-                "type": "felt"
-            },
-            {
                 "name": "value",
-                "type": "felt*"
+                "type": "felt"
             },
             {
                 "name": "id",
@@ -132,19 +113,68 @@
         "type": "event"
     },
     {
-        "inputs": [
+        "data": [
             {
-                "name": "owner",
+                "name": "previousOwner",
                 "type": "felt"
             },
             {
-                "name": "url",
+                "name": "newOwner",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "OwnershipTransferred",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "uri",
+                "type": "felt"
+            },
+            {
+                "name": "owner",
                 "type": "felt"
             }
         ],
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "user_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_user_daily_trade",
+        "outputs": [
+            {
+                "name": "daily_trade",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "user_address",
+                "type": "felt"
+            }
+        ],
+        "name": "get_user_claimed_pack",
+        "outputs": [
+            {
+                "name": "claimed",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [
@@ -156,7 +186,7 @@
         "name": "supportsInterface",
         "outputs": [
             {
-                "name": "is_supported",
+                "name": "success",
                 "type": "felt"
             }
         ],
@@ -164,7 +194,12 @@
         "type": "function"
     },
     {
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "id",
+                "type": "Uint256"
+            }
+        ],
         "name": "uri",
         "outputs": [
             {
@@ -218,11 +253,11 @@
         "name": "balanceOfBatch",
         "outputs": [
             {
-                "name": "batch_balances_len",
+                "name": "balances_len",
                 "type": "felt"
             },
             {
-                "name": "batch_balances",
+                "name": "balances",
                 "type": "Uint256*"
             }
         ],
@@ -243,11 +278,55 @@
         "name": "isApprovedForAll",
         "outputs": [
             {
-                "name": "is_approved",
+                "name": "isApproved",
                 "type": "felt"
             }
         ],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "uri",
+                "type": "felt"
+            }
+        ],
+        "name": "setURI",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "mint_daily_cards",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "id",
+                "type": "Uint256"
+            }
+        ],
+        "name": "send_card",
+        "outputs": [],
         "type": "function"
     },
     {
@@ -268,7 +347,7 @@
     {
         "inputs": [
             {
-                "name": "_from",
+                "name": "from_",
                 "type": "felt"
             },
             {
@@ -282,6 +361,14 @@
             {
                 "name": "amount",
                 "type": "Uint256"
+            },
+            {
+                "name": "data_len",
+                "type": "felt"
+            },
+            {
+                "name": "data",
+                "type": "felt*"
             }
         ],
         "name": "safeTransferFrom",
@@ -291,7 +378,7 @@
     {
         "inputs": [
             {
-                "name": "_from",
+                "name": "from_",
                 "type": "felt"
             },
             {
@@ -313,6 +400,14 @@
             {
                 "name": "amounts",
                 "type": "Uint256*"
+            },
+            {
+                "name": "data_len",
+                "type": "felt"
+            },
+            {
+                "name": "data",
+                "type": "felt*"
             }
         ],
         "name": "safeBatchTransferFrom",
@@ -332,6 +427,14 @@
             {
                 "name": "amount",
                 "type": "Uint256"
+            },
+            {
+                "name": "data_len",
+                "type": "felt"
+            },
+            {
+                "name": "data",
+                "type": "felt*"
             }
         ],
         "name": "mint",
@@ -359,6 +462,14 @@
             {
                 "name": "amounts",
                 "type": "Uint256*"
+            },
+            {
+                "name": "data_len",
+                "type": "felt"
+            },
+            {
+                "name": "data",
+                "type": "felt*"
             }
         ],
         "name": "mintBatch",
@@ -368,7 +479,7 @@
     {
         "inputs": [
             {
-                "name": "_from",
+                "name": "from_",
                 "type": "felt"
             },
             {
@@ -387,7 +498,7 @@
     {
         "inputs": [
             {
-                "name": "_from",
+                "name": "from_",
                 "type": "felt"
             },
             {
@@ -408,6 +519,23 @@
             }
         ],
         "name": "burnBatch",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "newOwner",
+                "type": "felt"
+            }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "renounceOwnership",
         "outputs": [],
         "type": "function"
     }

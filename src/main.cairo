@@ -1,25 +1,3 @@
-// %lang starknet
-
-// from starkware.cairo.common.alloc import alloc
-// from starkware.cairo.common.cairo_builtins import HashBuiltin
-// from starkware.cairo.common.hash import hash2
-// from starkware.cairo.common.math import unsigned_div_rem, split_felt
-// from starkware.cairo.common.uint256 import Uint256
-// from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp, get_caller_address
-
-
-// from src.utils.converter import felt_to_uint
-// from src.utils.time_converter import epoch_to_date
-// from src.utils.random_generator import generate_blister_pack
-// from src.contracts.ownable import Ownable
-// from src.token.erc1155.library import ERC1155_initializer, ERC1155_uri, ERC1155_balanceOf, ERC1155_balanceOfBatch, ERC1155_safeTransferFrom, ERC1155_mint, ERC1155_mint_batch
-
-// const MIN_VALUE_CARD_ID = 1;
-// const MAX_VALUE_CARD_ID = 69;
-
-// // SPDX-License-Identifier: MIT
-// // OpenZeppelin Contracts for Cairo v0.5.1 (token/erc1155/presets/ERC1155MintableBurnable.cairo)
-
 %lang starknet
 
 from starkware.cairo.common.alloc import alloc
@@ -29,6 +7,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import assert_not_zero, unsigned_div_rem, split_felt
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp, get_caller_address
 
+from src.token.tokenURI import ERC1155_setBaseTokenURI, ERC1155_tokenURI
 from src.token.erc1155.library import ERC1155
 from src.introspection.erc165.library import ERC165
 from src.access.ownable.library import Ownable
@@ -44,15 +23,16 @@ const MAX_VALUE_CARD_ID = 69;
 //
 
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    uri: felt, owner: felt
-) {
-    ERC1155.initializer(uri);
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (name: felt, symbol: felt, owner: felt, base_token_uri_len: felt, base_token_uri: felt*) {
+    ERC1155.initializer(name, symbol);
     Ownable.initializer(owner);
+    ERC1155_setBaseTokenURI(base_token_uri_len, base_token_uri);
     return ();
 }
 
+//
 // Storage 
+//
 
 @storage_var
 func claimed_pack(hash_value: felt) -> (claimed: felt) {
@@ -61,6 +41,29 @@ func claimed_pack(hash_value: felt) -> (claimed: felt) {
 @storage_var
 func daily_trade(hash_value: felt) -> (claimed: felt) {
 }
+
+//
+// Getters
+//
+
+@view
+func name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (name: felt) {
+    return ERC1155.name();
+}
+
+@view
+func symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (symbol: felt) {
+    return ERC1155.symbol();
+}
+
+@view
+func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    tokenId: Uint256
+) -> (tokenURI_len: felt, tokenURI: felt*) {
+    let (tokenURI_len, tokenURI) = ERC1155_tokenURI(tokenId);
+    return (tokenURI_len=tokenURI_len, tokenURI=tokenURI);
+}
+
 
 // its represented with a positional felt
 // If it returns 10 it is because you have sent a card to another address, 
@@ -96,36 +99,40 @@ func get_user_claimed_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     return (claimed=claimed_pack_today);
 }
 
-@view
-func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(id: Uint256) -> (
-    uri: felt
-) {
-    let (uri) = ERC1155.uri(id);
-    return (uri,);
-}
+// @view
+// func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(id: Uint256) -> (
+//     uri: felt
+// ) {
+//     let (uri) = ERC1155.uri(id);
+//     return (uri,);
+// }
 
 @view
 func balanceOf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     account: felt, id: Uint256
 ) -> (balance: Uint256) {
-     let (balance) = ERC1155.balance_of(account, id);
+    let (balance) = ERC1155.balance_of(account, id);
     return (balance,);
 }
 
 @view
 func balanceOfBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     accounts_len: felt, accounts: felt*, ids_len: felt, ids: Uint256*
-) -> (batch_balances_len: felt, batch_balances: Uint256*) {
+) -> (balances_len: felt, balances: Uint256*) {
     let (balances_len, balances) = ERC1155.balance_of_batch(accounts_len, accounts, ids_len, ids);
     return (balances_len, balances);
 }
 
-@external
-func setURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(uri: felt) {
-    Ownable.assert_only_owner();
-    ERC1155._set_uri(uri);
-    return ();
-}
+//
+// Externals
+//
+
+// @external
+// func setURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(uri: felt) {
+//     Ownable.assert_only_owner();
+//     ERC1155._set_uri(uri);
+//     return ();
+// }
 
 @external
 func mint_daily_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
@@ -194,7 +201,6 @@ func send_card{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     let one = 1;
     let amount = felt_to_uint(one);
-    
     // TODO: check what data is, for now will send empty
     let data_len = 0;
     let data: felt* = alloc();
@@ -248,6 +254,6 @@ func _fill_array_with{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 
 func get_value_from_caller_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(address: felt) -> felt {
     let (_, low) = split_felt(address);
-    let (_, r) = unsigned_div_rem(low, 103307);
+    let (_, r) = unsigned_div_rem(low, 466271);
     return r; 
 }

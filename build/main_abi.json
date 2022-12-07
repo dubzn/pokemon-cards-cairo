@@ -100,21 +100,6 @@
     {
         "data": [
             {
-                "name": "value",
-                "type": "felt"
-            },
-            {
-                "name": "id",
-                "type": "Uint256"
-            }
-        ],
-        "keys": [],
-        "name": "URI",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
                 "name": "previousOwner",
                 "type": "felt"
             },
@@ -130,17 +115,74 @@
     {
         "inputs": [
             {
-                "name": "uri",
+                "name": "name",
+                "type": "felt"
+            },
+            {
+                "name": "symbol",
                 "type": "felt"
             },
             {
                 "name": "owner",
                 "type": "felt"
+            },
+            {
+                "name": "base_token_uri_len",
+                "type": "felt"
+            },
+            {
+                "name": "base_token_uri",
+                "type": "felt*"
             }
         ],
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "name": "symbol",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "tokenId",
+                "type": "Uint256"
+            }
+        ],
+        "name": "tokenURI",
+        "outputs": [
+            {
+                "name": "tokenURI_len",
+                "type": "felt"
+            },
+            {
+                "name": "tokenURI",
+                "type": "felt*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [
@@ -170,23 +212,6 @@
         "outputs": [
             {
                 "name": "claimed",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "id",
-                "type": "Uint256"
-            }
-        ],
-        "name": "uri",
-        "outputs": [
-            {
-                "name": "uri",
                 "type": "felt"
             }
         ],
@@ -236,26 +261,15 @@
         "name": "balanceOfBatch",
         "outputs": [
             {
-                "name": "batch_balances_len",
+                "name": "balances_len",
                 "type": "felt"
             },
             {
-                "name": "batch_balances",
+                "name": "balances",
                 "type": "Uint256*"
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "uri",
-                "type": "felt"
-            }
-        ],
-        "name": "setURI",
-        "outputs": [],
         "type": "function"
     },
     {
