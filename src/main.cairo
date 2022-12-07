@@ -45,6 +45,11 @@ func daily_trade(hash_value: felt) -> (claimed: felt) {
 //
 // Getters
 //
+@view
+func get_timestamp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (timestamp: felt) {
+     let (current_epoch) = get_block_timestamp();
+     return (current_epoch,);
+}
 
 @view
 func name{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (name: felt) {
@@ -99,14 +104,6 @@ func get_user_claimed_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     return (claimed=claimed_pack_today);
 }
 
-// @view
-// func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(id: Uint256) -> (
-//     uri: felt
-// ) {
-//     let (uri) = ERC1155.uri(id);
-//     return (uri,);
-// }
-
 @view
 func balanceOf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     account: felt, id: Uint256
@@ -126,13 +123,6 @@ func balanceOfBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 //
 // Externals
 //
-
-// @external
-// func setURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(uri: felt) {
-//     Ownable.assert_only_owner();
-//     ERC1155._set_uri(uri);
-//     return ();
-// }
 
 @external
 func mint_daily_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
@@ -162,7 +152,6 @@ func mint_daily_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     let data: felt* = alloc();
 
     ERC1155._mint_batch(caller_address, pack_len, pack, pack_len, array_amounts_filled_one, data_len, data);
-    // ERC1155._mint_batch(to, ids_len, ids, amounts_len, amounts, data_len, data);
     claimed_pack.write(claim_hash, claimed_cards);
     return ();
 }
