@@ -9,31 +9,26 @@ from starkware.cairo.common.uint256 import Uint256
 
 @external
 func test_contains_point_happy_path{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let account = 0x0660cC8805f88E40c4e685ABf35B279DC05C02db063f719074A4Fd2c0bfe725a;
-    let (high, low) = split_felt(account);
-    let (high1, low1) = split_felt(high);
-    let (q, r) = unsigned_div_rem(low, 103307);
-    // let (_, _, claimed_cards) = generate_blister_pack(epoch, 1, 69);
+    alloc_locals;
+    // 0x033948D15C214A141ECb27CdE676Ed990B1F554BD6C84dbAd12DE090f1F8f631
+    // 0x053f44e0e4e4ed385e0e1a79f2c10371ca999bd5b04a24600d6f8fc1070647d6
+    let account = 0x033948D15C214A141ECb27CdE676Ed990B1F554BD6C84dbAd12DE090f1F8f631;
+    let account2 = 0x053f44e0e4e4ed385e0e1a79f2c10371ca999bd5b04a24600d6f8fc1070647d6;
+    let timestamp = 1670696360;
+    let block_number = 469929;
+    let (high1, low1) = split_felt(account);
+
+    let account_value = get_value_from_caller_account(account, timestamp);
+    let account_value2 = get_value_from_caller_account(account2, timestamp);
+
+    let (_,_, claimed_cards) = generate_blister_pack(account_value + timestamp + block_number, 1, 69);
+    let (_,_, claimed_cards2) = generate_blister_pack(account_value2 + timestamp + block_number, 1, 69);
+
     %{
-        print(f"claimed cards {ids.account}, high: {ids.high}, low: {ids.low} low1: {ids.low1}, now QR: {ids.q} / {ids.r}")
+        print(f"{ids.claimed_cards}")
+        print(f"{ids.claimed_cards2}")
     %}
-
-    // let (year, month, day) = epoch_to_date(epoch);
-    // let year_aux = year * 10000;
-    // let month_aux = month * 100;
-    // let date = year_aux + month_aux + day;
-
-    // let (claim_hash) = hash2{hash_ptr=pedersen_ptr}(caller_address, date);
-
-    // %{
-    //     print(f"claim_hash {ids.claim_hash}: {ids.year}/{ids.month}/{ids.day} - {ids.date}")
-    // %}
-    // 1024670627075842192129310575254363281518441961233936237901975277425575244517
-    // 1024670627075842192129310575254363281518441961233936237901975277425575244517
-    // 1024670627075842192129310575254363281518441961233936237901975277425575244517
-    // 1298651935554320578476075934656414594964567821570595834126272951530932119280
-    // 671926550182669671171834328634626358601673759298333815981089228144147725261
-    // 671926550182669671171834328634626358601673759298333815981089228144147725261
+ 
     return();
 }
 
@@ -41,4 +36,13 @@ func felt_to_uint256{range_check_ptr}(value) -> Uint256 {
     let (high, low) = split_felt(value);
     let value256 = Uint256(low, high);
     return value256;
+}
+
+func get_value_from_caller_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(address: felt, timestamp: felt) -> felt {
+    let (high, low) = split_felt(address);
+    let (_, h) = unsigned_div_rem(high, 9973);
+    let (_, l) = unsigned_div_rem(low, 7549);
+    let (_, rem) = unsigned_div_rem(timestamp, h + l);
+
+    return rem; 
 }

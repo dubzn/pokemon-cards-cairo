@@ -143,7 +143,7 @@ func mint_daily_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         assert claimed_pack_today = 0;
     }
 
-    let account_value = get_value_from_caller_account(caller_address);
+    let account_value = get_value_from_caller_account(caller_address, current_epoch);
     let (pack_len, pack, claimed_cards) = generate_blister_pack(account_value + current_epoch + current_block, MIN_VALUE_CARD_ID, MAX_VALUE_CARD_ID);
     let array_amounts_filled_one = fill_array_with(pack_len, 1);
     
@@ -241,8 +241,11 @@ func _fill_array_with{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return _fill_array_with(len, value_to_fill, array, i + 1);
 }
 
-func get_value_from_caller_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(address: felt) -> felt {
-    let (_, low) = split_felt(address);
-    let (_, r) = unsigned_div_rem(low, 466271);
-    return r; 
+func get_value_from_caller_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(address: felt, timestamp: felt) -> felt {
+    let (high, low) = split_felt(address);
+    let (_, h) = unsigned_div_rem(high, 9973);
+    let (_, l) = unsigned_div_rem(low, 7549);
+    let (_, rem) = unsigned_div_rem(timestamp, h + l);
+
+    return rem; 
 }

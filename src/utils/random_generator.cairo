@@ -27,17 +27,17 @@ func generate_blister_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     let pack: Uint256* = alloc();
 
     // "random" :( 
-    let (seed, rseed) = unsigned_div_rem(original_seed, 664); 
-    let (seed1, rseed1) = unsigned_div_rem(original_seed, 3233); 
-    let (seed2, rseed2) = unsigned_div_rem(original_seed, 78572); 
-    let (seed3, rseed3) = unsigned_div_rem(original_seed, 4256); 
-    let (seed4, rseed4) = unsigned_div_rem(original_seed, 525); 
+    let (seed, rseed) = unsigned_div_rem(original_seed, 521); 
+    let (seed1, rseed1) = unsigned_div_rem(original_seed, 3709); 
+    let (seed2, rseed2) = unsigned_div_rem(original_seed, 70879); 
+    let (seed3, rseed3) = unsigned_div_rem(original_seed, 104231); 
+    let (seed4, rseed4) = unsigned_div_rem(original_seed, 1949); 
 
-    let (random1) = random_in_range(seed + rseed2, min, max);
+    let (random1) = random_in_range(seed + rseed3, min, max);
     let (random2) = random_in_range(seed1 + rseed1, min, max);
-    let (random3) = random_in_range(seed2 + rseed3, min, max);
+    let (random3) = random_in_range(seed2 + rseed, min, max);
     let (random4) = random_in_range(seed3 + rseed4, min, max);
-    let (random5) = random_in_range(seed4 + rseed, min, max);
+    let (random5) = random_in_range(seed4 + rseed3, min, max);
 
     let card1 = felt_to_uint(random1);
     let card2 = felt_to_uint(random2);
@@ -58,6 +58,5 @@ func generate_blister_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     let card1_aux = random1 * 100000000;
 
     let claimed_cards = card1_aux  + card2_aux + card3_aux  + card4_aux  + card5_aux ;
-       
     return (5, pack, claimed_cards);
 }

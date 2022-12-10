@@ -30,9 +30,8 @@ func ERC1155_tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     let (local base_tokenURI_len) = ERC1155_base_tokenURI_len.read();
     _ERC1155_baseTokenURI(base_tokenURI_len, base_tokenURI);
     let (token_id_ss_len, token_id_ss) = uint256_to_ss(token_id);
-    let (ext_len, ext) = felt_to_ss(199571628656); //.webp
     let (tokenURI, tokenURI_len) = concat_arr(
-        base_tokenURI_len, base_tokenURI, token_id_ss_len, token_id_ss, ext_len, ext
+        base_tokenURI_len, base_tokenURI, token_id_ss_len, token_id_ss
     );
 
     return (tokenURI_len=tokenURI_len, tokenURI=tokenURI);
