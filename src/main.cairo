@@ -69,6 +69,19 @@ func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return (tokenURI_len=tokenURI_len, tokenURI=tokenURI);
 }
 
+@view
+func isApprovedForAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    account: felt, operator: felt
+) -> (isApproved: felt) {
+    let (is_approved) = ERC1155.is_approved_for_all(account, operator);
+    return (is_approved,);
+}
+
+@view
+func owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
+    let (owner: felt) = Ownable.owner();
+    return (owner,);
+}
 
 // its represented with a positional felt
 // If it returns 10 it is because you have sent a card to another address, 
@@ -202,6 +215,7 @@ func send_card{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return ();
 }
 
+
 @external
 func mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     to: felt, id: Uint256, amount: Uint256, data_len: felt, data: felt*
@@ -223,6 +237,71 @@ func mintBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 ) {
     Ownable.assert_only_owner();
     ERC1155._mint_batch(to, ids_len, ids, amounts_len, amounts, data_len, data);
+    return ();
+}
+
+@external
+func setApprovalForAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    operator: felt, approved: felt
+) {
+    ERC1155.set_approval_for_all(operator, approved);
+    return ();
+}
+
+@external
+func burn{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    from_: felt, id: Uint256, amount: Uint256
+) {
+    ERC1155.assert_owner_or_approved(owner=from_);
+    ERC1155._burn(from_, id, amount);
+    return ();
+}
+
+@external
+func burnBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    from_: felt, ids_len: felt, ids: Uint256*, amounts_len: felt, amounts: Uint256*
+) {
+    ERC1155.assert_owner_or_approved(owner=from_);
+    ERC1155._burn_batch(from_, ids_len, ids, amounts_len, amounts);
+    return ();
+}
+
+@external
+func safeTransferFrom{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    from_: felt, to: felt, id: Uint256, amount: Uint256, data_len: felt, data: felt*
+) {
+    Ownable.assert_only_owner();
+    ERC1155.safe_transfer_from(from_, to, id, amount, data_len, data);
+    return ();
+}
+
+@external
+func safeBatchTransferFrom{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    from_: felt,
+    to: felt,
+    ids_len: felt,
+    ids: Uint256*,
+    amounts_len: felt,
+    amounts: Uint256*,
+    data_len: felt,
+    data: felt*,
+) {
+    Ownable.assert_only_owner();
+    ERC1155.safe_batch_transfer_from(from_, to, ids_len, ids, amounts_len, amounts, data_len, data);
+    return ();
+}
+
+@external
+func transferOwnership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    newOwner: felt
+) {
+    Ownable.transfer_ownership(newOwner);
+    return ();
+}
+
+@external
+func renounceOwnership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    Ownable.renounce_ownership();
     return ();
 }
 
