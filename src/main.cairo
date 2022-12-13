@@ -14,6 +14,7 @@ from src.access.ownable.library import Ownable
 from src.utils.time_converter import epoch_to_date
 from src.utils.random_generator import generate_blister_pack
 from src.utils.converter import felt_to_uint
+from src.data import lookup_pkmn
 
 const MIN_VALUE_CARD_ID = 1;
 const MAX_VALUE_CARD_ID = 69;
@@ -61,12 +62,50 @@ func symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -
     return ERC1155.symbol();
 }
 
+// @view
+// func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+//     tokenId: Uint256
+// ) -> (tokenURI_len: felt, tokenURI: felt*) {
+//     let (tokenURI_len, tokenURI) = ERC1155_tokenURI(tokenId);
+//     return (tokenURI_len=tokenURI_len, tokenURI=tokenURI);
+// }
+
 @view
 func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     tokenId: Uint256
 ) -> (tokenURI_len: felt, tokenURI: felt*) {
-    let (tokenURI_len, tokenURI) = ERC1155_tokenURI(tokenId);
-    return (tokenURI_len=tokenURI_len, tokenURI=tokenURI);
+    alloc_locals;
+    
+    if (tokenId.low == 0) {
+        let empty_uri: felt* = alloc();   
+        return (tokenURI_len=0, tokenURI=empty_uri);
+    }
+
+    let pokemon = lookup_pkmn(tokenId.low - 1);
+    let (uri) = alloc();
+    assert uri[0] = 'data:application/json,{"name":"';
+    assert uri[1] = pokemon.name;
+    assert uri[2] = ' #';
+    assert uri[3] = tokenId.low;
+    assert uri[4] = '","descr';
+    assert uri[5] = 'iption":"Base Pokemon Cards in';
+    assert uri[6] = ' Cairo","image":"https://ipfs.';
+    assert uri[7] = 'io/ipfs/QmbCRMSuCDxxXGRNgvAM3B';
+    assert uri[8] = 'hDVNC6i8hvCT2NvpnsqgFQhS/';
+    assert uri[9] = tokenId.low;
+    assert uri[10] = '.webp';
+
+    let len = 11;
+
+    assert uri[len] = ',"attributes":[{"trait_';
+    assert uri[len + 1] = 'type":"Type","value":"';
+    assert uri[len + 2] = pokemon.type;
+    assert uri[len + 3] = '"},{"trait_type":"Artist","valu';
+    assert uri[len + 4] = 'e":"';
+    assert uri[len + 5] = pokemon.artist;
+    assert uri[len + 6] = '"}]}';
+
+    return (tokenURI_len=len + 7, tokenURI=uri);
 }
 
 @view
