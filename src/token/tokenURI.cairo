@@ -6,6 +6,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 from src.token.erc1155.library import ERC1155
 from src.utils.short_string import uint256_to_ss, felt_to_ss
+from src.utils.converter import felt_to_uint
 from src.utils.array import concat_arr
 
 //

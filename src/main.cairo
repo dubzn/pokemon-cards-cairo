@@ -46,6 +46,14 @@ func daily_trade(hash_value: felt) -> (claimed: felt) {
 //
 // Getters
 //
+
+@view
+func supportsInterface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    interfaceId: felt
+) -> (success: felt) {
+    return ERC165.supports_interface(interfaceId);
+}
+
 @view
 func get_timestamp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (timestamp: felt) {
      let (current_epoch) = get_block_timestamp();
@@ -81,31 +89,8 @@ func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         return (tokenURI_len=0, tokenURI=empty_uri);
     }
 
-    let pokemon = lookup_pkmn(tokenId.low - 1);
-    let (uri) = alloc();
-    assert uri[0] = 'data:application/json,{"name":"';
-    assert uri[1] = pokemon.name;
-    assert uri[2] = ' #';
-    assert uri[3] = tokenId.low;
-    assert uri[4] = '","descr';
-    assert uri[5] = 'iption":"Base Pokemon Cards in';
-    assert uri[6] = ' Cairo","image":"https://ipfs.';
-    assert uri[7] = 'io/ipfs/QmbCRMSuCDxxXGRNgvAM3B';
-    assert uri[8] = 'hDVNC6i8hvCT2NvpnsqgFQhS/';
-    assert uri[9] = tokenId.low;
-    assert uri[10] = '.webp';
-
-    let len = 11;
-
-    assert uri[len] = ',"attributes":[{"trait_';
-    assert uri[len + 1] = 'type":"Type","value":"';
-    assert uri[len + 2] = pokemon.type;
-    assert uri[len + 3] = '"},{"trait_type":"Artist","valu';
-    assert uri[len + 4] = 'e":"';
-    assert uri[len + 5] = pokemon.artist;
-    assert uri[len + 6] = '"}]}';
-
-    return (tokenURI_len=len + 7, tokenURI=uri);
+    let (uri_len, uri) = ERC1155_tokenURI(tokenId);
+    return (tokenURI_len=uri_len, tokenURI=uri);
 }
 
 @view
