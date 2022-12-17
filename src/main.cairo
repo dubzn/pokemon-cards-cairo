@@ -7,7 +7,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import assert_not_zero, unsigned_div_rem, split_felt
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp, get_caller_address
 
-from src.token.tokenURI import ERC1155_setBaseTokenURI, ERC1155_tokenURI
+from src.token.tokenURI import ERC1155_setBaseTokenURI, ERC1155_tokenURI, ERC1155_setContractURI, ERC1155_contractURI
 from src.token.erc1155.library import ERC1155
 from src.introspection.erc165.library import ERC165
 from src.access.ownable.library import Ownable
@@ -24,10 +24,11 @@ const MAX_VALUE_CARD_ID = 69;
 //
 
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (name: felt, symbol: felt, owner: felt, base_token_uri_len: felt, base_token_uri: felt*) {
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (name: felt, symbol: felt, owner: felt, base_token_uri_len: felt, base_token_uri: felt*, contract_uri_len: felt, contract_uri: felt*) {
     ERC1155.initializer(name, symbol);
     Ownable.initializer(owner);
     ERC1155_setBaseTokenURI(base_token_uri_len, base_token_uri);
+    ERC1155_setContractURI(contract_uri_len, contract_uri);
     return ();
 }
 
@@ -55,7 +56,7 @@ func supportsInterface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 }
 
 @view
-func get_timestamp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (timestamp: felt) {
+func blockTimestamp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (timestamp: felt) {
      let (current_epoch) = get_block_timestamp();
      return (current_epoch,);
 }
@@ -70,13 +71,20 @@ func symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -
     return ERC1155.symbol();
 }
 
-// @view
-// func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     tokenId: Uint256
-// ) -> (tokenURI_len: felt, tokenURI: felt*) {
-//     let (tokenURI_len, tokenURI) = ERC1155_tokenURI(tokenId);
-//     return (tokenURI_len=tokenURI_len, tokenURI=tokenURI);
-// }
+@view
+func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    tokenId: Uint256
+) -> (tokenURI_len: felt, tokenURI: felt*) {
+    alloc_locals;
+    
+    if (tokenId.low == 0) {
+        let empty_uri: felt* = alloc();   
+        return (tokenURI_len=0, tokenURI=empty_uri);
+    }
+
+    let (uri_len, uri) = ERC1155_tokenURI(tokenId);
+    return (tokenURI_len=uri_len, tokenURI=uri);
+}
 
 @view
 func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -94,17 +102,10 @@ func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 }
 
 @view
-func isApprovedForAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    account: felt, operator: felt
-) -> (isApproved: felt) {
-    let (is_approved) = ERC1155.is_approved_for_all(account, operator);
-    return (is_approved,);
-}
-
-@view
-func owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
-    let (owner: felt) = Ownable.owner();
-    return (owner,);
+func contractURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (contractURI_len: felt, contractURI: felt*) {
+    alloc_locals;
+    let (uri_len, uri) = ERC1155_contractURI();
+    return (contractURI_len=uri_len, contractURI=uri);
 }
 
 // its represented with a positional felt
@@ -156,6 +157,21 @@ func balanceOfBatch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let (balances_len, balances) = ERC1155.balance_of_batch(accounts_len, accounts, ids_len, ids);
     return (balances_len, balances);
 }
+
+@view
+func isApprovedForAll{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    account: felt, operator: felt
+) -> (isApproved: felt) {
+    let (is_approved) = ERC1155.is_approved_for_all(account, operator);
+    return (is_approved,);
+}
+
+@view
+func owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (owner: felt) {
+    let (owner: felt) = Ownable.owner();
+    return (owner,);
+}
+
 
 //
 // Externals
@@ -239,6 +255,19 @@ func send_card{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return ();
 }
 
+@external
+func setBaseTokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(base_token_uri_len: felt, base_token_uri: felt*) {
+    Ownable.assert_only_owner();
+    ERC1155_setBaseTokenURI(base_token_uri_len, base_token_uri);
+    return ();
+}
+
+@external
+func setContractURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(contract_uri_len: felt, contract_uri: felt*) {
+    Ownable.assert_only_owner();
+    ERC1155_setContractURI(contract_uri_len, contract_uri);
+    return ();
+}
 
 @external
 func mint{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

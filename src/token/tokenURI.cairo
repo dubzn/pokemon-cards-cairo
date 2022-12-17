@@ -21,6 +21,58 @@ func ERC1155_base_tokenURI(index: felt) -> (res: felt) {
 func ERC1155_base_tokenURI_len() -> (res: felt) {
 }
 
+@storage_var
+func ERC1155_contract_URI(index: felt) -> (res: felt) {
+}
+
+@storage_var
+func ERC1155_contract_URI_len() -> (res: felt) {
+}
+
+// CONTRACT
+
+func ERC1155_contractURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (contract_URI_len: felt, contractURI: felt*) {
+    alloc_locals;
+    // Return tokenURI with an array of felts, `${base_tokenURI}/${token_id}`
+    let (local base_contractURI) = alloc();
+    let (local base_contractURI_len) = ERC1155_contract_URI_len.read();
+    _ERC1155_contractURI(base_contractURI_len, base_contractURI);
+    return (contract_URI_len=base_contractURI_len, contractURI=base_contractURI);
+}
+
+func _ERC1155_contractURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    base_contractURI_len: felt, base_contractURI: felt*
+) {
+    if (base_contractURI_len == 0) {
+        return ();
+    }
+    let (base) = ERC1155_contract_URI.read(base_contractURI_len);
+    assert [base_contractURI] = base;
+    _ERC1155_contractURI(base_contractURI_len=base_contractURI_len - 1, base_contractURI=base_contractURI + 1);
+    return ();
+}
+
+func ERC1155_setContractURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    contractURI_len: felt, contractURI: felt*
+) {
+    _ERC1155_setContractURI(contractURI_len, contractURI);
+    ERC1155_contract_URI_len.write(contractURI_len);
+    return ();
+}
+
+func _ERC1155_setContractURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    contractURI_len: felt, contractURI: felt*
+) {
+    if (contractURI_len == 0) {
+        return ();
+    }
+    ERC1155_contract_URI.write(index=contractURI_len, value=[contractURI]);
+    _ERC1155_setContractURI(contractURI_len=contractURI_len - 1, contractURI=contractURI + 1);
+    return ();
+}
+
+// TOKEN
+
 func ERC1155_tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     token_id: Uint256
 ) -> (tokenURI_len: felt, tokenURI: felt*) {
