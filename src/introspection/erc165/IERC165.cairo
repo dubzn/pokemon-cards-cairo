@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// OpenZeppelin Contracts for Cairo v0.5.1 (introspection/erc165/IERC165.cairo)
+
 %lang starknet
 
 @contract_interface

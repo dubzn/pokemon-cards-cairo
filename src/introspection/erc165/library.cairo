@@ -1,10 +1,13 @@
+// SPDX-License-Identifier: MIT
+// OpenZeppelin Contracts for Cairo v0.5.1 (introspection/erc165/library.cairo)
+
 %lang starknet
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.bool import TRUE
 
-from openzeppelin.utils.constants import INVALID_ID, IERC165_ID
+from src.utils.constants.library import INVALID_ID, IERC165_ID
 
 @storage_var
 func ERC165_supported_interfaces(interface_id: felt) -> (is_supported: felt) {
@@ -15,12 +18,12 @@ namespace ERC165 {
         interface_id: felt
     ) -> (success: felt) {
         if (interface_id == IERC165_ID) {
-            return (TRUE,);
+            return (success=TRUE);
         }
 
         // Checks interface registry
         let (is_supported) = ERC165_supported_interfaces.read(interface_id);
-        return (is_supported,);
+        return (success=is_supported);
     }
 
     func register_interface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
