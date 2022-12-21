@@ -7,28 +7,37 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import assert_not_zero, unsigned_div_rem, split_felt
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp, get_caller_address
 
+from src.access.ownable.library import Ownable
+from src.introspection.erc165.library import ERC165
 from src.token.tokenURI import ERC1155_setBaseTokenURI, ERC1155_tokenURI, ERC1155_setContractURI, ERC1155_contractURI
 from src.token.erc1155.library import ERC1155
-from src.introspection.erc165.library import ERC165
-from src.access.ownable.library import Ownable
+from src.utils.converter import felt_to_uint
 from src.utils.time_converter import epoch_to_date
 from src.utils.random_generator import generate_blister_pack
-from src.utils.converter import felt_to_uint
-from src.data import lookup_pkmn
+from src.upgrades.library import Proxy
+
 
 const MIN_VALUE_CARD_ID = 1;
 const MAX_VALUE_CARD_ID = 69;
 
 //
-// Constructor
+// Proxy
 //
 
-@constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (name: felt, symbol: felt, owner: felt, base_token_uri_len: felt, base_token_uri: felt*, contract_uri_len: felt, contract_uri: felt*) {
+@external
+func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (proxy_admin: felt, name: felt, symbol: felt, owner: felt, base_token_uri_len: felt, base_token_uri: felt*, contract_uri_len: felt, contract_uri: felt*) {
     ERC1155.initializer(name, symbol);
     Ownable.initializer(owner);
     ERC1155_setBaseTokenURI(base_token_uri_len, base_token_uri);
     ERC1155_setContractURI(contract_uri_len, contract_uri);
+    Proxy.initializer(proxy_admin);
+    return ();
+}
+
+@external
+func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (new_implementation: felt) -> () {
+    Proxy.assert_only_admin();
+    Proxy._set_implementation_hash(new_implementation);
     return ();
 }
 
@@ -49,9 +58,7 @@ func daily_trade(hash_value: felt) -> (claimed: felt) {
 //
 
 @view
-func supportsInterface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    interfaceId: felt
-) -> (success: felt) {
+func supportsInterface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (interfaceId: felt) -> (success: felt) {
     return ERC165.supports_interface(interfaceId);
 }
 
@@ -72,11 +79,8 @@ func symbol{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -
 }
 
 @view
-func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    tokenId: Uint256
-) -> (tokenURI_len: felt, tokenURI: felt*) {
+func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(tokenId: Uint256) -> (tokenURI_len: felt, tokenURI: felt*) {
     alloc_locals;
-    
     if (tokenId.low == 0) {
         let empty_uri: felt* = alloc();   
         return (tokenURI_len=0, tokenURI=empty_uri);
@@ -87,11 +91,8 @@ func uri{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 }
 
 @view
-func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    tokenId: Uint256
-) -> (tokenURI_len: felt, tokenURI: felt*) {
+func tokenURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(tokenId: Uint256) -> (tokenURI_len: felt, tokenURI: felt*) {
     alloc_locals;
-    
     if (tokenId.low == 0) {
         let empty_uri: felt* = alloc();   
         return (tokenURI_len=0, tokenURI=empty_uri);
@@ -115,13 +116,8 @@ func contractURI{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @view
 func get_user_daily_trade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (daily_trade: felt) {
     let (current_epoch) = get_block_timestamp();
-
-    let (year, month, day) = epoch_to_date(current_epoch);
-    let year_aux = year * 10000;
-    let month_aux = month * 100;
-    let date = year_aux + month_aux + day;
-
-    let (user_plus_day_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, date);
+    let (day, _) = unsigned_div_rem(current_epoch, 86400);
+    let (user_plus_day_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, day);
     let (trade_value) = daily_trade.read(user_plus_day_hash);
 
     return (daily_trade=trade_value);
@@ -130,13 +126,9 @@ func get_user_daily_trade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 @view
 func get_user_claimed_pack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (claimed: felt) {
     let (current_epoch) = get_block_timestamp();
+    let (day, _) = unsigned_div_rem(current_epoch, 86400);
 
-    let (year, month, day) = epoch_to_date(current_epoch);
-    let year_aux = year * 10000;
-    let month_aux = month * 100;
-    let date = year_aux + month_aux + day;
-
-    let (user_plus_day_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, date);
+    let (user_plus_day_hash) = hash2{hash_ptr=pedersen_ptr}(user_address, day);
     let (claimed_pack_today) = claimed_pack.read(user_plus_day_hash);
 
     return (claimed=claimed_pack_today);
@@ -172,7 +164,6 @@ func owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() ->
     return (owner,);
 }
 
-
 //
 // Externals
 //
@@ -184,12 +175,8 @@ func mint_daily_cards{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     let (current_block) = get_block_number();
     let (caller_address) = get_caller_address();
 
-    let (year, month, day) = epoch_to_date(current_epoch);
-    let year_aux = year * 10000;
-    let month_aux = month * 100;
-    let date = year_aux + month_aux + day;
-
-    let (claim_hash) = hash2{hash_ptr=pedersen_ptr}(caller_address, date);
+    let (day, _) = unsigned_div_rem(current_epoch, 86400);
+    let (claim_hash) = hash2{hash_ptr=pedersen_ptr}(caller_address, day);
     let (claimed_pack_today) = claimed_pack.read(claim_hash);
 
     with_attr error_message("Already claimed a pack of cards today!") {
@@ -218,13 +205,10 @@ func send_card{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let (current_epoch) = get_block_timestamp();
     let (caller_address) = get_caller_address();
 
-    let (year, month, day) = epoch_to_date(current_epoch);
-    let year_aux = year * 10000;
-    let month_aux = month * 100;
-    let date = year_aux + month_aux + day;
+    let (day, _) = unsigned_div_rem(current_epoch, 86400);
 
     // Validate that the person sending the letter has not used their daily delivery.
-    let (caller_hash) = hash2{hash_ptr=pedersen_ptr}(caller_address, date);
+    let (caller_hash) = hash2{hash_ptr=pedersen_ptr}(caller_address, day);
     let (caller_trade_status) = daily_trade.read(caller_hash);
     let (caller_send_card_flag, caller_receiver_card_flag) = unsigned_div_rem(caller_trade_status, 10);
 
@@ -233,7 +217,7 @@ func send_card{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     }
 
     // Validate that the person receiving the letter has not used their daily receipt.
-    let (receiver_hash) = hash2{hash_ptr=pedersen_ptr}(to, date);
+    let (receiver_hash) = hash2{hash_ptr=pedersen_ptr}(to, day);
     let (receiver_trade_status) = daily_trade.read(receiver_hash);
     let (receiver_send_card_flag, receiver_receive_card_flag) = unsigned_div_rem(receiver_trade_status, 10);
 
