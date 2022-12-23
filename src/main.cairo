@@ -16,7 +16,6 @@ from src.utils.time_converter import epoch_to_date
 from src.utils.random_generator import generate_blister_pack
 from src.upgrades.library import Proxy
 
-
 const MIN_VALUE_CARD_ID = 1;
 const MAX_VALUE_CARD_ID = 69;
 

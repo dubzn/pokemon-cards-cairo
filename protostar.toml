@@ -1,7 +1,10 @@
 [project]
-protostar-version = "0.8.1"
+protostar-version = "0.9.1"
 lib-path = "lib"
 
 [contracts]
 main = ["src/main.cairo"]
 
+[profile.testnet.project]
+network="testnet"
+account-address="0x0660cC8805f88E40c4e685ABf35B279DC05C02db063f719074A4Fd2c0bfe725a"
