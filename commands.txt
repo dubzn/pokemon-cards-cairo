@@ -30,7 +30,6 @@ starknet invoke --account=dub --address 0x041a78e741e5af2fec34b695679bc689174243
 selector 1295919550572838631247819983596733806859788957403169325509326258146877103642
 imple hash 0x51fa838ced3fad6dd2885801184570dcfdd87d710c72b6b42caaba013d49b0e
 proxy classhash: 0x006fbebe249798b93ca0e2d3c7884e85a81bdb78f6d66c7d9f4ece12c532ed28
-export PROTOSTAR_ACCOUNT_PRIVATE_KEY=0x0782bd9b44cd0c536c57af88acb2a7ab3d7118450fe1db7fd51ad318623081f2
 protostar -p testnet declare ./build/main.json --max-fee auto 
 
 func initializer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr} (proxy_admin: felt, name: felt, symbol: felt, owner: felt, base_token_uri_len: felt, base_token_uri: felt*, contract_uri_len: felt, contract_uri: felt*) {
